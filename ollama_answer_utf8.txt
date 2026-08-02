@@ -1,0 +1,7 @@
+﻿Tài liệu trình bày các thuật toán tối ưu sau:  
+- Gradient Descent  
+- Newton’s Method  
+- BFGS  
+- Golden Section Search  
+- Maximum Likelihood Estimation  
+- Phương pháp subgradient

@@ -1,0 +1,51 @@
+OPENRESEARCH GRAPH V2 - FINAL VERIFICATION
+Generated: 2026-07-31
+
+[PASS] Python compileall
+Scope: backend/app, backend/alembic, data_pipeline, scripts
+
+[PASS] Backend unit/service test suite and coverage gate
+TOTAL                                          2414    443    82%
+Required test coverage of 80% reached. Total coverage: 81.65%
+94 passed in 7.32s
+
+[PASS] FastAPI import and OpenAPI generation
+routes=46
+openapi_paths=35
+
+[PASS] TypeScript/TSX syntax transpilation
+files=34
+parse_errors=0
+Note: next-env.d.ts is a generated declaration file and was excluded from transpilation.
+
+[PASS] JSON/YAML/notebook parsing
+json=4
+yaml=6
+notebooks=4
+
+[PASS] High-confidence secret scan
+No high-confidence secrets found.
+
+[PASS] Placeholder scan
+TODO=0
+FIXME=0
+NotImplemented=0
+except Exception: pass=0
+
+[INFO] Repository statistics
+files=236
+python_files=124
+typescript_files=35
+markdown_files=36
+python_loc=8155
+typescript_loc=1690
+markdown_loc=5610
+
+[NOT RUN] Full npm install, ESLint, module-aware TypeScript typecheck, Vitest, Playwright, Next.js production build
+Reason: the delivery environment could not obtain frontend packages from its npm registry. Syntax parsing passed, but this is not equivalent to a full build.
+
+[NOT RUN] Docker build, Docker Compose startup, PostgreSQL migration and database integration test
+Reason: Docker CLI/daemon was unavailable in the delivery environment.
+
+[NOT RUN] Credential-backed OpenAlex, Stripe, SMTP, Ollama/OpenAI-compatible LLM and S3 tests
+Reason: these checks require user-owned test credentials and/or local services.

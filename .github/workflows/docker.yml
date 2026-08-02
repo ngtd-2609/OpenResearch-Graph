@@ -1,0 +1,13 @@
+name: Docker Build
+on:
+  push:
+    branches: [main]
+  pull_request:
+jobs:
+  compose-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: cp .env.example .env
+      - run: docker compose config
+      - run: docker compose build backend frontend

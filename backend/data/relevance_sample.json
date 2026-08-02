@@ -1,0 +1,22 @@
+[
+  {"query":"reinforcement learning for traffic control","title":"Deep Reinforcement Learning for Traffic Signal Control","abstract":"An agent learns adaptive signal timing from traffic observations.","label":1},
+  {"query":"reinforcement learning for traffic control","title":"Image Segmentation with U-Net","abstract":"A convolutional network segments biomedical images.","label":0},
+  {"query":"graph neural networks for molecules","title":"Message Passing Neural Networks for Molecular Property Prediction","abstract":"Graph representations are used to predict chemical properties.","label":1},
+  {"query":"graph neural networks for molecules","title":"Monetary Policy and Inflation","abstract":"An economic analysis of central bank interventions.","label":0},
+  {"query":"retrieval augmented generation","title":"Retrieval-Augmented Generation for Knowledge-Intensive NLP","abstract":"A generator conditions on documents retrieved from an external index.","label":1},
+  {"query":"retrieval augmented generation","title":"Sorting Algorithms in Introductory Programming","abstract":"A comparison of merge sort and insertion sort.","label":0},
+  {"query":"crop drought prediction satellite","title":"Satellite-Based Drought Monitoring for Agriculture","abstract":"Vegetation indices and rainfall features estimate crop water stress.","label":1},
+  {"query":"crop drought prediction satellite","title":"A Study of Medieval Poetry","abstract":"Literary themes in historical poems are examined.","label":0},
+  {"query":"solar power forecasting weather","title":"Short-Term Photovoltaic Power Forecasting with Weather Features","abstract":"Gradient boosting predicts solar generation from irradiance and clouds.","label":1},
+  {"query":"solar power forecasting weather","title":"Protein Structure Classification","abstract":"A classifier identifies protein fold families.","label":0},
+  {"query":"air quality forecasting urban","title":"Spatio-Temporal Forecasting of Urban Air Pollution","abstract":"Sensor and meteorological data predict particulate matter concentrations.","label":1},
+  {"query":"air quality forecasting urban","title":"Quantum Error Correction Codes","abstract":"Logical qubits are protected against quantum noise.","label":0},
+  {"query":"scientific paper recommendation","title":"Hybrid Scholarly Recommendation with Content and Citation Graphs","abstract":"Embeddings, implicit feedback and PageRank are combined for paper ranking.","label":1},
+  {"query":"scientific paper recommendation","title":"Marine Species Identification","abstract":"Underwater photographs are classified by a vision model.","label":0},
+  {"query":"pdf question answering citations","title":"Grounded Document Question Answering with Page-Level Evidence","abstract":"Retrieved passages support answers with document and page citations.","label":1},
+  {"query":"pdf question answering citations","title":"Optimizing Warehouse Layout","abstract":"A mixed integer program minimizes travel distance.","label":0},
+  {"query":"time series anomaly detection","title":"Autoencoder-Based Anomaly Detection in Multivariate Time Series","abstract":"Reconstruction error identifies unusual temporal observations.","label":1},
+  {"query":"time series anomaly detection","title":"Ancient Trade Routes","abstract":"Archaeological evidence describes historical commerce.","label":0},
+  {"query":"citation network community detection","title":"Community Detection in Large Citation Networks","abstract":"Graph clustering reveals scientific communities and influential papers.","label":1},
+  {"query":"citation network community detection","title":"Audio Source Separation","abstract":"Neural networks separate speakers from mixed recordings.","label":0}
+]

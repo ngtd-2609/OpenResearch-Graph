@@ -1,0 +1,13 @@
+data_path: data/relevance_sample.json
+output_path: models/relevance.pt
+seed: 42
+epochs: 30
+batch_size: 8
+learning_rate: 0.001
+weight_decay: 0.0001
+validation_fraction: 0.25
+patience: 5
+vocab_size: 30000
+embedding_size: 96
+hidden_size: 128
+dropout: 0.2

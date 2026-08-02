@@ -1,0 +1,7 @@
+services:
+  backend:
+    environment:
+      DEBUG: "true"
+  frontend:
+    environment:
+      NODE_ENV: development
