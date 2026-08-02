@@ -29,7 +29,7 @@ export default function GraphPage() {
           style: {
             label: "data(label)",
             "font-size": 8,
-            "text-max-width": 120,
+            "text-max-width": "120px",
             "text-wrap": "ellipsis",
             width: "mapData(citations, 0, 190000, 22, 72)",
             height: "mapData(citations, 0, 190000, 22, 72)",
