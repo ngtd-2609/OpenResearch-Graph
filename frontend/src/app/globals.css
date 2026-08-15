@@ -135,3 +135,58 @@ textarea { min-height: 130px; resize: vertical; }
 .integration-meta > div { display: flex; justify-content: space-between; gap: 16px; }
 .integration-meta dt { color: var(--muted); }
 .integration-meta dd { margin: 0; font-weight: 600; text-align: right; }
+
+/* Comparison Matrix Styling */
+.comparison-matrix-card { margin: 24px 0; border: 1.5px solid #cbd5e1; background: #ffffff; }
+.comparison-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.comparison-title { margin: 0 0 4px 0; font-size: 1.25rem; font-weight: 700; color: #0f172a; }
+.comparison-table-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.comparison-table { width: 100%; border-collapse: collapse; text-align: left; }
+.comparison-table th, .comparison-table td { padding: 12px 16px; border: 1px solid #e2e8f0; vertical-align: top; }
+.comparison-table th { background: #f8fafc; font-weight: 600; font-size: 0.88rem; }
+.comparison-th-content { display: flex; justify-content: space-between; align-items: start; gap: 8px; }
+.comparison-paper-link { font-weight: 600; color: var(--primary); font-size: 0.92rem; }
+.comparison-remove-btn { border: 0; background: #f1f5f9; border-radius: 50%; width: 22px; height: 22px; cursor: pointer; font-weight: 700; font-size: 14px; line-height: 1; color: #64748b; }
+.comparison-remove-btn:hover { background: #fee2e2; color: #dc2626; }
+.comparison-abstract { max-width: 320px; font-size: 0.82rem; line-height: 1.5; color: #334155; }
+.citation-count { color: #0284c7; }
+
+/* Deep Research Stepper & Panel */
+.deep-research-container { margin: 16px 0; }
+.research-mode-toggle-card { border-left: 4px solid var(--primary); background: #fcfdff; }
+.status-indicator { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+.status-active { background: #16a34a; box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.2); }
+.status-idle { background: #94a3b8; }
+.research-stepper { display: grid; gap: 10px; padding: 14px; background: #f1f5f9; border-radius: 12px; }
+.stepper-item { display: flex; align-items: start; gap: 12px; }
+.stepper-circle { width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700; flex-shrink: 0; }
+.step-done .stepper-circle { background: #16a34a; color: white; }
+.step-pending .stepper-circle { background: #cbd5e1; color: #475569; }
+.stepper-title { font-weight: 600; font-size: 0.88rem; }
+.stepper-detail { color: #64748b; font-size: 0.78rem; }
+.answer-dossier-card { border: 1px solid #e2e8f0; background: #ffffff; }
+.citation-pills-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.citation-pill { background: #f8fafc; border: 1px solid #cbd5e1; padding: 6px 12px; border-radius: 999px; font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: all 0.15s ease; color: #334155; }
+.citation-pill:hover { border-color: var(--primary); color: var(--primary); background: #eff6ff; }
+.citation-pill-active { background: #dbeafe; border-color: var(--primary); color: var(--primary-dark); }
+.citation-quote-box { background: #f8fafc; border: 1px solid #e2e8f0; border-left: 3px solid #0284c7; padding: 12px; border-radius: 8px; font-size: 0.85rem; }
+.citation-quote-box blockquote { margin: 4px 0 0; padding: 0; background: transparent; border: 0; font-style: italic; color: #1e293b; }
+
+.badge-success { background: #dcfce7; color: #15803d; }
+.badge-neutral { background: #f1f5f9; color: #475569; }
+.gap-2 { gap: 8px; }
+.text-xs { font-size: 0.75rem; }
+.text-sm { font-size: 0.875rem; }
+.font-semibold { font-weight: 600; }
+.mt-1 { margin-top: 4px; }
+.mt-3 { margin-top: 12px; }
+.mt-4 { margin-top: 16px; }
+.mt-6 { margin-top: 24px; }
+.mb-1 { margin-bottom: 4px; }
+.mb-3 { margin-bottom: 12px; }
+.pb-3 { padding-bottom: 12px; }
+.border-b { border-bottom: 1px solid var(--border); }
+.justify-between { justify-content: space-between; }
+.items-center { align-items: center; }
+.italic { font-style: italic; }
+.line-clamp-4 { display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
