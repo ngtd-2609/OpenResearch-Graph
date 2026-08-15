@@ -19,6 +19,25 @@ class RateLimitService:
     _memory_counts: dict[str, int] = defaultdict(int)
     _memory_expiry: dict[str, float] = {}
     _lock = asyncio.Lock()
+    _redis_client: object | None = None
+    _redis_disabled_until: float = 0.0
+
+    @classmethod
+    def _get_redis(cls) -> object | None:
+        if Redis is None or time.time() < cls._redis_disabled_until:
+            return None
+        if cls._redis_client is None:
+            try:
+                cls._redis_client = Redis.from_url(
+                    settings.redis_url,
+                    decode_responses=True,
+                    socket_connect_timeout=0.05,
+                    socket_timeout=0.05,
+                )
+            except Exception:
+                cls._redis_disabled_until = time.time() + 60.0
+                return None
+        return cls._redis_client
 
     async def allow(
         self,
@@ -28,19 +47,19 @@ class RateLimitService:
     ) -> tuple[bool, int]:
         window = int(time.time() // window_seconds)
         key = f"rate:{identity}:{window}"
-        if Redis is not None:
+        redis = self._get_redis()
+        if redis is not None:
             try:
-                redis = Redis.from_url(settings.redis_url, decode_responses=True)
                 async with redis.pipeline(transaction=True) as pipeline:
                     pipeline.incr(key)
                     pipeline.expire(key, window_seconds, nx=True)
                     count, _ = await pipeline.execute()
-                await redis.aclose()
                 numeric_count = int(count)
                 return numeric_count <= limit, max(0, limit - numeric_count)
             except Exception as exc:
-                logger.warning(
-                    "Redis rate limiter unavailable; using bounded memory fallback: %s",
+                RateLimitService._redis_disabled_until = time.time() + 60.0
+                logger.debug(
+                    "Redis rate limiter failed, failing over to memory for 60s: %s",
                     type(exc).__name__,
                 )
         return await self._allow_in_memory(key, limit, window_seconds)

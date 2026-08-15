@@ -9,7 +9,9 @@ export default function Providers({ children }: { children: React.ReactNode }) {
       new QueryClient({
         defaultOptions: {
           queries: {
-            staleTime: 30_000,
+            staleTime: 60_000,
+            gcTime: 10 * 60_000,
+            refetchOnWindowFocus: false,
             retry: (failureCount, error) => {
               const status = typeof error === "object" && error && "status" in error ? Number(error.status) : 0;
               return status >= 400 && status < 500 ? false : failureCount < 2;

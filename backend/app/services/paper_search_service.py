@@ -236,12 +236,13 @@ class PaperSearchService:
             )
 
         prelim.sort(key=lambda item: item.score, reverse=True)
-        rerank_count = min(50, len(prelim))
-        rerank_scores = get_reranking_service().score(
-            query,
-            [f"{item.paper.title} {item.paper.abstract or ''}" for item in prelim[:rerank_count]],
-        )
-        for item, rerank_score in zip(prelim[:rerank_count], rerank_scores, strict=True):
-            item.components["rerank"] = rerank_score
-            item.score += weights["rerank"] * rerank_score
+        rerank_count = min(15, len(prelim))
+        if rerank_count > 0 and weights.get("rerank", 0) > 0:
+            rerank_scores = get_reranking_service().score(
+                query,
+                [f"{item.paper.title} {item.paper.abstract or ''}" for item in prelim[:rerank_count]],
+            )
+            for item, rerank_score in zip(prelim[:rerank_count], rerank_scores, strict=True):
+                item.components["rerank"] = rerank_score
+                item.score += weights["rerank"] * rerank_score
         return sorted(prelim, key=lambda item: item.score, reverse=True)

@@ -61,8 +61,12 @@ class EmbeddingService:
             return [np.asarray(vector, dtype=np.float32).astype(float).tolist() for vector in vectors]
         return [self._hash_embedding(text) for text in normalized_texts]
 
+    @lru_cache(maxsize=2048)
+    def encode_query_cached(self, text: str) -> tuple[float, ...]:
+        return tuple(self.encode([text])[0])
+
     def encode_query(self, text: str) -> list[float]:
-        return self.encode([text])[0]
+        return list(self.encode_query_cached(text))
 
     def _hash_embedding(self, text: str) -> list[float]:
         vector = np.zeros(settings.embedding_dimension, dtype=np.float32)
