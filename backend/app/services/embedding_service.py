@@ -26,7 +26,13 @@ class EmbeddingService:
     def _load_model(self) -> object | bool:
         if self._model is None:
             try:
+                import os
+                import torch
                 from sentence_transformers import SentenceTransformer
+
+                # Set optimal thread count for CPU parallel vectorization
+                threads = min(8, max(2, os.cpu_count() or 4))
+                torch.set_num_threads(threads)
 
                 model = SentenceTransformer(
                     settings.embedding_model_name,
@@ -46,18 +52,29 @@ class EmbeddingService:
                 self.backend_name = "deterministic-hash"
         return self._model
 
-    def encode(self, texts: Iterable[str], *, batch_size: int = 32) -> list[list[float]]:
+    def encode(self, texts: Iterable[str], *, batch_size: int = 64) -> list[list[float]]:
         normalized_texts = [text.strip() for text in texts]
         if not normalized_texts:
             return []
         model = self._load_model()
         if model:
-            vectors = model.encode(
-                normalized_texts,
-                normalize_embeddings=True,
-                batch_size=batch_size,
-                show_progress_bar=False,
-            )
+            try:
+                import torch
+
+                with torch.inference_mode():
+                    vectors = model.encode(
+                        normalized_texts,
+                        normalize_embeddings=True,
+                        batch_size=batch_size,
+                        show_progress_bar=False,
+                    )
+            except Exception:
+                vectors = model.encode(
+                    normalized_texts,
+                    normalize_embeddings=True,
+                    batch_size=batch_size,
+                    show_progress_bar=False,
+                )
             return [np.asarray(vector, dtype=np.float32).astype(float).tolist() for vector in vectors]
         return [self._hash_embedding(text) for text in normalized_texts]
 

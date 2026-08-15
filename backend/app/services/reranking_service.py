@@ -18,7 +18,12 @@ class RerankingService:
     def _load_model(self) -> object | bool:
         if self._model is None:
             try:
+                import os
+                import torch
                 from sentence_transformers import CrossEncoder
+
+                threads = min(8, max(2, os.cpu_count() or 4))
+                torch.set_num_threads(threads)
 
                 self._model = CrossEncoder(settings.reranker_model_name, device=settings.embedding_device)
             except Exception as exc:  # pragma: no cover - environment dependent
@@ -31,7 +36,17 @@ class RerankingService:
             return []
         model = self._load_model()
         if model:
-            raw_scores = model.predict([(query, document) for document in documents])
+            try:
+                import torch
+
+                with torch.inference_mode():
+                    raw_scores = model.predict(
+                        [(query, document) for document in documents],
+                        show_progress_bar=False,
+                        batch_size=32,
+                    )
+            except Exception:
+                raw_scores = model.predict([(query, document) for document in documents])
             return [self._sigmoid(float(score)) for score in raw_scores]
         query_terms = set(TOKEN_PATTERN.findall(query.lower()))
         scores: list[float] = []
