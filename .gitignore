@@ -27,3 +27,8 @@ Thumbs.db
 .idea/
 .env
 backend/.env
+frontend/.env.local
+backend/uploads/*
+!backend/uploads/.gitkeep
+backend/checkpoints/*.json
+*.tsbuildinfo
