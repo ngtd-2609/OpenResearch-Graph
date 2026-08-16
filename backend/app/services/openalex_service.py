@@ -32,15 +32,33 @@ class OpenAlexService:
         query: str,
         page: int = 1,
         per_page: int = 20,
+        *,
+        from_year: int | None = None,
+        to_year: int | None = None,
+        open_access: bool | None = None,
     ) -> dict[str, Any]:
-        return await self._request_works(
-            {
-                "search": query,
-                "page": page,
-                "per_page": min(per_page, 100),
-                "select": WORK_SELECT_FIELDS,
-            }
-        )
+        params: dict[str, Any] = {
+            "search": query,
+            "page": page,
+            "per_page": min(per_page, 100),
+            "select": WORK_SELECT_FIELDS,
+        }
+        filter_parts: list[str] = []
+        if from_year and to_year:
+            if from_year == to_year:
+                filter_parts.append(f"publication_year:{from_year}")
+            else:
+                filter_parts.append(f"publication_year:{from_year}-{to_year}")
+        elif from_year:
+            filter_parts.append(f"from_publication_date:{from_year}-01-01")
+        elif to_year:
+            filter_parts.append(f"to_publication_date:{to_year}-12-31")
+        if open_access is not None:
+            filter_parts.append(f"is_oa:{'true' if open_access else 'false'}")
+        if filter_parts:
+            params["filter"] = ",".join(filter_parts)
+
+        return await self._request_works(params)
 
     async def work_page(
         self,

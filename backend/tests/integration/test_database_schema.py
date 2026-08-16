@@ -3,7 +3,7 @@ import os
 import pytest
 from sqlalchemy import text
 
-from app.db.session import engine
+from app.db.session import get_engine
 
 pytestmark = pytest.mark.skipif(
     os.getenv("RUN_DB_TESTS") != "1",
@@ -13,7 +13,7 @@ pytestmark = pytest.mark.skipif(
 
 @pytest.mark.asyncio
 async def test_required_extensions_and_indexes_exist() -> None:
-    async with engine.connect() as connection:
+    async with get_engine().connect() as connection:
         extensions = {
             row[0]
             for row in (

@@ -54,9 +54,6 @@ class PaperSearchService:
         per_page: int,
     ) -> tuple[int, list[Paper]]:
         conditions = self._conditions(filters)
-        total = int(
-            await db.scalar(select(func.count()).select_from(Paper).where(*conditions)) or 0
-        )
         query_vector = get_embedding_service().encode_query(query)
         candidate_pool = max(settings.search_candidate_pool, page * per_page * 3)
         candidates = await self._database_candidates(
@@ -66,7 +63,9 @@ class PaperSearchService:
             conditions=conditions,
             limit=candidate_pool,
         )
-        if not candidates:
+        if candidates:
+            total = await self._count_query_matches(db, query=query, conditions=conditions)
+        else:
             candidates = list(
                 (
                     await db.scalars(
@@ -76,6 +75,9 @@ class PaperSearchService:
                         .limit(candidate_pool)
                     )
                 ).all()
+            )
+            total = int(
+                await db.scalar(select(func.count()).select_from(Paper).where(*conditions)) or 0
             )
         ranked = self._rank(query, query_vector, candidates)
         offset = (page - 1) * per_page
@@ -125,6 +127,35 @@ class PaperSearchService:
                 )
             )
         return conditions
+
+    async def _count_query_matches(
+        self,
+        db: AsyncSession,
+        *,
+        query: str,
+        conditions: list[object],
+    ) -> int:
+        """Count papers matching the search query and filter conditions."""
+        bind = db.get_bind()
+        if bind.dialect.name != "postgresql":
+            lexical = or_(Paper.title.ilike(f"%{query}%"), Paper.abstract.ilike(f"%{query}%"))
+            return int(
+                await db.scalar(
+                    select(func.count()).select_from(Paper).where(*conditions, lexical)
+                )
+                or 0
+            )
+        text_vector = func.to_tsvector(
+            "simple",
+            func.concat_ws(" ", Paper.title, func.coalesce(Paper.abstract, "")),
+        )
+        ts_query = func.websearch_to_tsquery("simple", query)
+        return int(
+            await db.scalar(
+                select(func.count()).select_from(Paper).where(*conditions, text_vector.op("@@")(ts_query))
+            )
+            or 0
+        )
 
     async def _database_candidates(
         self,

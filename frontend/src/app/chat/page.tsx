@@ -16,6 +16,21 @@ const SUGGESTED_PROMPTS = [
   "Các hạn chế (limitations) và hướng nghiên cứu tương lai",
 ];
 
+type ChatSessionItem = {
+  id: string;
+  title: string;
+  document_id: string;
+  updated_at: string;
+};
+
+type ChatMessageItem = {
+  id: string;
+  role: "user" | "assistant";
+  content: string;
+  citations: Array<{ document_id: string; page: number; chunk_id: string; quote: string; score: number }>;
+  created_at: string;
+};
+
 function sleep(milliseconds: number) {
   return new Promise((resolve) => window.setTimeout(resolve, milliseconds));
 }
@@ -43,6 +58,9 @@ function ChatContent() {
   const [busy, setBusy] = useState(false);
   const [isDeepResearch, setIsDeepResearch] = useState(true);
   const [existingDocs, setExistingDocs] = useState<DocumentItem[]>([]);
+  const [chatSessions, setChatSessions] = useState<ChatSessionItem[]>([]);
+  const [sessionMessages, setSessionMessages] = useState<ChatMessageItem[]>([]);
+  const [showSessions, setShowSessions] = useState(false);
 
   useEffect(() => {
     api<DocumentItem[]>("/documents")
@@ -50,7 +68,60 @@ function ChatContent() {
         setExistingDocs(docs.filter((d) => d.status === "completed"));
       })
       .catch(() => {});
+    api<ChatSessionItem[]>("/chat/sessions")
+      .then((sessions) => {
+        setChatSessions(sessions);
+      })
+      .catch(() => {});
   }, []);
+
+  async function loadSession(session: ChatSessionItem) {
+    setBusy(true);
+    setAnswer(null);
+    setSessionMessages([]);
+    try {
+      const data = await api<{
+        id: string;
+        title: string;
+        document_id: string;
+        messages: ChatMessageItem[];
+      }>(`/chat/sessions/${session.id}`);
+      setSessionId(data.id);
+      setDocumentName(data.title);
+      setSessionMessages(data.messages);
+      setStatus(`Đã mở phiên chat: "${data.title}"`);
+      // Show the last assistant answer if available
+      const lastAssistant = [...data.messages].reverse().find((m) => m.role === "assistant");
+      if (lastAssistant) {
+        setAnswer({
+          answer: lastAssistant.content,
+          citations: lastAssistant.citations,
+          model: "qwen3:4b (Ollama)",
+          latency_ms: 0,
+        });
+      }
+    } catch (error) {
+      setStatus(error instanceof Error ? error.message : "Không thể mở phiên chat");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function deleteSession(sessionIdToDelete: string) {
+    try {
+      await api(`/chat/sessions/${sessionIdToDelete}`, { method: "DELETE" });
+      setChatSessions((prev) => prev.filter((s) => s.id !== sessionIdToDelete));
+      if (sessionId === sessionIdToDelete) {
+        setSessionId("");
+        setDocumentName("");
+        setAnswer(null);
+        setSessionMessages([]);
+        setStatus("Phiên chat đã bị xóa.");
+      }
+    } catch (error) {
+      alert(error instanceof Error ? error.message : "Không thể xóa phiên chat");
+    }
+  }
 
   async function selectExistingDoc(doc: DocumentItem) {
     setBusy(true);
@@ -62,7 +133,14 @@ function ChatContent() {
       });
       setSessionId(session.id);
       setDocumentName(doc.filename);
+      setSessionMessages([]);
+      setAnswer(null);
       setStatus(`Đã sẵn sàng chat với tài liệu "${doc.filename}"`);
+      // Refresh session list
+      setChatSessions((prev) => [
+        { id: session.id, title: doc.filename, document_id: doc.id, updated_at: new Date().toISOString() },
+        ...prev,
+      ]);
     } catch (error) {
       setStatus(error instanceof Error ? error.message : "Không thể chọn tài liệu");
     } finally {
@@ -74,6 +152,7 @@ function ChatContent() {
     if (!file) return;
     setBusy(true);
     setAnswer(null);
+    setSessionMessages([]);
     try {
       const formData = new FormData();
       formData.append("file", file);
@@ -93,6 +172,11 @@ function ChatContent() {
       setSessionId(session.id);
       setDocumentName(document.filename);
       setStatus("Tài liệu đã sẵn sàng để đối thoại chuyên sâu.");
+      // Refresh session list
+      setChatSessions((prev) => [
+        { id: session.id, title: document.filename, document_id: document.id, updated_at: new Date().toISOString() },
+        ...prev,
+      ]);
     } catch (error) {
       setStatus(error instanceof Error ? error.message : "Không thể xử lý tài liệu");
     } finally {
@@ -109,6 +193,19 @@ function ChatContent() {
         body: JSON.stringify({ question: question.trim() }),
       });
       setAnswer(response);
+      // Append new messages to session history
+      const now = new Date().toISOString();
+      setSessionMessages((prev) => [
+        ...prev,
+        { id: `user-${Date.now()}`, role: "user", content: question.trim(), citations: [], created_at: now },
+        {
+          id: `assistant-${Date.now()}`,
+          role: "assistant",
+          content: response.answer,
+          citations: response.citations,
+          created_at: now,
+        },
+      ]);
     } catch (error) {
       setStatus(error instanceof Error ? error.message : "Không thể gửi câu hỏi");
     } finally {
@@ -120,12 +217,67 @@ function ChatContent() {
     <main className="container">
       <header className="page-header">
         <div>
-          <h1>Trợ lý Nghiên cứu & Deep Research RAG</h1>
+          <h1>Trợ lý Nghiên cứu &amp; Deep Research RAG</h1>
           <p className="muted">
             Truy xuất thông minh đa tầng, kiểm chứng dẫn chứng chính xác theo trang PDF.
           </p>
         </div>
+        <button
+          className="secondary-button"
+          onClick={() => setShowSessions((v) => !v)}
+          type="button"
+        >
+          {showSessions ? "Ẩn lịch sử" : `📋 Lịch sử (${chatSessions.length})`}
+        </button>
       </header>
+
+      {showSessions && chatSessions.length > 0 && (
+        <section className="card mb-4">
+          <h2 className="text-sm font-semibold mb-2">Các phiên chat trước đó</h2>
+          <div className="stack gap-2" style={{ maxHeight: "300px", overflowY: "auto" }}>
+            {chatSessions.map((session) => (
+              <div
+                key={session.id}
+                className="row gap-2"
+                style={{ alignItems: "center", justifyContent: "space-between" }}
+              >
+                <button
+                  className={`secondary-button text-xs text-left flex-1 ${sessionId === session.id ? "border-primary" : ""}`}
+                  onClick={() => loadSession(session)}
+                  type="button"
+                  style={{ minWidth: 0 }}
+                >
+                  <span style={{ fontWeight: 500 }}>💬 {session.title}</span>
+                  <span className="muted" style={{ marginLeft: "8px", fontSize: "0.7rem" }}>
+                    {new Date(session.updated_at).toLocaleDateString("vi-VN", {
+                      day: "2-digit",
+                      month: "2-digit",
+                      year: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </span>
+                </button>
+                <button
+                  className="secondary-button text-xs"
+                  onClick={() => deleteSession(session.id)}
+                  title="Xóa phiên chat"
+                  type="button"
+                  style={{ flexShrink: 0 }}
+                >
+                  🗑️
+                </button>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {showSessions && chatSessions.length === 0 && (
+        <section className="card mb-4">
+          <p className="muted text-sm">Chưa có phiên chat nào.</p>
+        </section>
+      )}
 
       <div className="grid two-columns">
         <section className="card stack">
@@ -204,6 +356,33 @@ function ChatContent() {
           </button>
         </section>
       </div>
+
+      {sessionMessages.length > 0 && (
+        <section className="card mt-4">
+          <h2 className="text-sm font-semibold mb-2">Lịch sử hội thoại</h2>
+          <div className="stack gap-3" style={{ maxHeight: "400px", overflowY: "auto" }}>
+            {sessionMessages.map((msg) => (
+              <div
+                key={msg.id}
+                style={{
+                  padding: "8px 12px",
+                  borderRadius: "8px",
+                  background: msg.role === "user" ? "var(--surface-alt, #f0f4ff)" : "var(--surface, #fff)",
+                  borderLeft: msg.role === "assistant" ? "3px solid var(--primary, #3b82f6)" : "none",
+                }}
+              >
+                <div className="text-xs muted mb-1" style={{ fontWeight: 600 }}>
+                  {msg.role === "user" ? "🧑 Bạn" : "🤖 Trợ lý"}
+                  <span style={{ marginLeft: "8px", fontWeight: 400 }}>
+                    {new Date(msg.created_at).toLocaleTimeString("vi-VN")}
+                  </span>
+                </div>
+                <div className="text-sm" style={{ whiteSpace: "pre-wrap" }}>{msg.content}</div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       <DeepResearchPanel
         query={question}

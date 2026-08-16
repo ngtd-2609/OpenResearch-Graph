@@ -24,6 +24,12 @@ async def upload_document(
     if file.content_type != "application/pdf" or not (file.filename or "").lower().endswith(".pdf"):
         raise HTTPException(status_code=415, detail="Only PDF files are accepted")
 
+    # Validate PDF magic bytes to prevent spoofed uploads (Audit §11.2 / §14.5)
+    header = await file.read(5)
+    if header != b"%PDF-":
+        raise HTTPException(status_code=400, detail="File is not a valid PDF (invalid header)")
+    await file.seek(0)
+
     subscription = await db.scalar(select(Subscription).where(Subscription.user_id == user.id))
     document_count = int(
         await db.scalar(
@@ -69,8 +75,9 @@ async def upload_document(
     await db.refresh(document)
     try:
         process_document.delay(str(document.id))
-    except Exception:
-        await process_document_inline(str(document.id))
+    except Exception as exc:
+        # Fallback to async background processing so HTTP response isn't blocked (Audit §11.3)
+        asyncio.create_task(process_document_inline(str(document.id)))
     return DocumentUploadResponse(
         id=document.id,
         status=document.processing_status,

@@ -63,7 +63,14 @@ async def search_papers(
         per_page=per_page,
     )
     if not papers and OpenAlexService().configured:
-        remote = await OpenAlexService().search_works(query, page, per_page)
+        remote = await OpenAlexService().search_works(
+            query,
+            page,
+            per_page,
+            from_year=from_year,
+            to_year=to_year,
+            open_access=open_access,
+        )
         papers = []
         for item in remote.get("results", []):
             normalized = OpenAlexService.normalize_work(item)
@@ -71,7 +78,22 @@ async def search_papers(
                 NAMESPACE_URL,
                 normalized.get("openalex_id") or normalized["title"],
             )
-            papers.append(Paper(**normalized))
+            # Persist / merge paper into database so Detail & Save routes work seamlessly
+            paper_obj = Paper(**normalized)
+            if hasattr(db, "merge"):
+                try:
+                    merged = await db.merge(paper_obj)
+                    if merged is not None:
+                        paper_obj = merged
+                except Exception:
+                    pass
+            papers.append(paper_obj)
+        if hasattr(db, "commit"):
+            try:
+                await db.commit()
+            except Exception:
+                if hasattr(db, "rollback"):
+                    await db.rollback()
         total = int(remote.get("meta", {}).get("count", len(papers)))
     return PaginatedPapers(
         query=query,

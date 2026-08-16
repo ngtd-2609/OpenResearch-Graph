@@ -106,7 +106,7 @@ async def test_search_falls_back_to_normalized_openalex_data(monkeypatch: pytest
     async def local(*_args: Any, **_kwargs: Any) -> tuple[int, list[Paper]]:
         return 0, []
 
-    async def remote(_self: Any, _query: str, _page: int, _per_page: int) -> dict[str, Any]:
+    async def remote(_self: Any, _query: str, _page: int, _per_page: int, **_kwargs: Any) -> dict[str, Any]:
         return {
             "meta": {"count": 12},
             "results": [{"id": "https://openalex.org/W1", "display_name": "Remote paper"}],

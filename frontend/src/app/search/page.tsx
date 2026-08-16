@@ -1,11 +1,12 @@
 "use client";
 
 import PaperComparisonMatrix from "@/components/paper-comparison-matrix";
-import { api } from "@/lib/api";
+import { ApiError, api } from "@/lib/api";
 import type { PaginatedPapers, Paper } from "@/types/api";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import Link from "next/link";
-import { FormEvent, useMemo, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { FormEvent, Suspense, useMemo, useState } from "react";
 
 const PER_PAGE = 10;
 
@@ -18,15 +19,40 @@ const QUICK_TOPICS = [
   "Recommender Systems",
 ];
 
-export default function SearchPage() {
-  const [draft, setDraft] = useState("deep learning");
-  const [query, setQuery] = useState("deep learning");
-  const [page, setPage] = useState(1);
-  const [fromYear, setFromYear] = useState("");
-  const [toYear, setToYear] = useState("");
-  const [openAccess, setOpenAccess] = useState(false);
+function SearchContent() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const initialQuery = searchParams.get("query") || "deep learning";
+  const initialPage = Number(searchParams.get("page")) || 1;
+  const initialFromYear = searchParams.get("from_year") || "";
+  const initialToYear = searchParams.get("to_year") || "";
+  const initialOpenAccess = searchParams.get("open_access") === "true";
+
+  const [draft, setDraft] = useState(initialQuery);
+  const [query, setQuery] = useState(initialQuery);
+  const [page, setPage] = useState(initialPage);
+  const [fromYear, setFromYear] = useState(initialFromYear);
+  const [toYear, setToYear] = useState(initialToYear);
+  const [openAccess, setOpenAccess] = useState(initialOpenAccess);
   const [saved, setSaved] = useState<Record<string, boolean>>({});
   const [selectedForCompare, setSelectedForCompare] = useState<Paper[]>([]);
+
+  function updateUrl(params: {
+    query: string;
+    page: number;
+    fromYear: string;
+    toYear: string;
+    openAccess: boolean;
+  }) {
+    const urlParams = new URLSearchParams();
+    urlParams.set("query", params.query);
+    if (params.page > 1) urlParams.set("page", String(params.page));
+    if (params.fromYear) urlParams.set("from_year", params.fromYear);
+    if (params.toYear) urlParams.set("to_year", params.toYear);
+    if (params.openAccess) urlParams.set("open_access", "true");
+    router.replace(`/search?${urlParams.toString()}`);
+  }
 
   const searchPath = useMemo(() => {
     const parameters = new URLSearchParams({
@@ -49,22 +75,38 @@ export default function SearchPage() {
 
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    const trimmed = draft.trim();
     setPage(1);
-    setQuery(draft.trim());
+    setQuery(trimmed);
+    updateUrl({ query: trimmed, page: 1, fromYear, toYear, openAccess });
   }
 
   function applyQuickTopic(topic: string) {
     setDraft(topic);
     setQuery(topic);
     setPage(1);
+    updateUrl({ query: topic, page: 1, fromYear, toYear, openAccess });
+  }
+
+  function handlePageChange(newPage: number) {
+    setPage(newPage);
+    updateUrl({ query, page: newPage, fromYear, toYear, openAccess });
   }
 
   async function savePaper(paper: Paper) {
-    await api("/library", {
-      method: "POST",
-      body: JSON.stringify({ paper_id: paper.id, collection_name: "Saved", tags: [] }),
-    });
-    setSaved((current) => ({ ...current, [paper.id]: true }));
+    try {
+      await api("/library", {
+        method: "POST",
+        body: JSON.stringify({ paper_id: paper.id, collection_name: "Saved", tags: [] }),
+      });
+      setSaved((current) => ({ ...current, [paper.id]: true }));
+    } catch (error) {
+      if (error instanceof ApiError && (error.status === 401 || error.status === 403)) {
+        alert("Bạn cần đăng nhập để lưu bài báo");
+      } else {
+        alert(error instanceof Error ? error.message : "Không thể lưu bài báo. Vui lòng thử lại.");
+      }
+    }
   }
 
   function toggleCompare(paper: Paper) {
@@ -89,9 +131,9 @@ export default function SearchPage() {
     <main className="container">
       <header className="page-header">
         <div>
-          <h1>Tìm kiếm & Phân tích Bài báo Khoa học</h1>
+          <h1>Tìm kiếm &amp; Phân tích Bài báo Khoa học</h1>
           <p className="muted">
-            Hybrid Search đa chiều (pgvector + FTS + Reranking) & Bảng so sánh tương tác.
+            Hybrid Search đa chiều (pgvector + FTS + Reranking) &amp; Bảng so sánh tương tác.
           </p>
         </div>
       </header>
@@ -226,7 +268,7 @@ export default function SearchPage() {
         <button
           className="secondary-button"
           disabled={page <= 1}
-          onClick={() => setPage((value) => value - 1)}
+          onClick={() => handlePageChange(page - 1)}
           type="button"
         >
           Trang trước
@@ -235,12 +277,20 @@ export default function SearchPage() {
         <button
           className="secondary-button"
           disabled={page >= totalPages}
-          onClick={() => setPage((value) => value + 1)}
+          onClick={() => handlePageChange(page + 1)}
           type="button"
         >
           Trang sau
         </button>
       </nav>
     </main>
+  );
+}
+
+export default function SearchPage() {
+  return (
+    <Suspense fallback={<div className="container">Đang tải...</div>}>
+      <SearchContent />
+    </Suspense>
   );
 }

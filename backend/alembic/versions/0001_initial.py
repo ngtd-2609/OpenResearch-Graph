@@ -413,6 +413,7 @@ def downgrade() -> None:
         "institutions",
         "authors",
         "papers",
+        "payment_webhook_events",
         "subscriptions",
         "action_tokens",
         "refresh_tokens",

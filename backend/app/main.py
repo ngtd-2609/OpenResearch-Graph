@@ -1,7 +1,7 @@
 import time
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, Request, Response
+from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import ORJSONResponse
 
@@ -9,7 +9,9 @@ from app.api.v1.router import api_router
 from app.core.config import settings
 from app.core.exceptions import install_exception_handlers
 from app.core.logging import configure_logging
-from app.db.session import get_engine
+from sqlalchemy import text
+
+from app.db.session import AsyncSessionLocal, get_engine
 from app.services.embedding_service import get_embedding_service
 from app.services.reranking_service import get_reranking_service
 
@@ -60,3 +62,14 @@ async def root() -> dict[str, str]:
 @app.get("/health")
 async def health() -> dict[str, str]:
     return {"status": "healthy", "environment": settings.environment}
+
+
+@app.get("/ready")
+async def ready() -> dict[str, str]:
+    """Readiness probe: verifies database connectivity (Audit §7.4)."""
+    try:
+        async with AsyncSessionLocal() as session:
+            await session.execute(text("SELECT 1"))
+        return {"status": "ready"}
+    except Exception as exc:
+        raise HTTPException(status_code=503, detail=f"Database not reachable: {exc}") from exc

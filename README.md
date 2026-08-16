@@ -1,249 +1,190 @@
 # 🔬 OpenResearch Graph v2
 
-> **Nền tảng Trí tuệ Nghiên cứu Khoa học Thông minh**: Tìm kiếm Đa chiều (Hybrid Semantic Search), Mạng lưới Đồ thị Trích dẫn (Citation Network), Trợ lý Deep Research PDF RAG kiểm chứng theo trang và Hệ thống Gợi ý Cá nhân hóa (Hybrid Recommender).
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.115+-009688.svg?style=flat&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
+[![Next.js](https://img.shields.io/badge/Next.js-15.5+-black.svg?style=flat&logo=next.js&logoColor=white)](https://nextjs.org)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16_pgvector-336791.svg?style=flat&logo=postgresql&logoColor=white)](https://neon.tech)
+[![PyTorch](https://img.shields.io/badge/PyTorch-2.0+-EE4C2C.svg?style=flat&logo=pytorch&logoColor=white)](https://pytorch.org)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-3178C6.svg?style=flat&logo=typescript&logoColor=white)](https://www.typescriptlang.org)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+> **AI Research Workspace & Scholarly Intelligence Platform**: Nền tảng nghiên cứu khoa học thông minh tích hợp **Hybrid Semantic Search** (pgvector + FTS + Reranking), **Citation Knowledge Graph** (Mạng lưới trích dẫn tương tác), **Deep PDF RAG Agent** (Trợ lý đọc tài liệu dẫn nguồn theo trang) và **Personalized Recommender System** (Hệ thống gợi ý bài báo cá nhân hóa).
 
 ---
 
 ## 📑 Mục lục
-1. [Giới thiệu Tổng quan](#1-giới-thiệu-tổng-quan)
-2. [Kiến trúc Kỹ thuật & Công nghệ](#2-kiến-trúc-kỹ-thuật--công-nghệ)
-3. [Hướng dẫn Cài đặt & Chạy trên Máy khác](#3-hướng-dẫn-cài-đặt--chạy-trên-máy-khác)
-4. [Tài khoản Thử nghiệm Mẫu](#4-tài-khoản-thử-nghiệm-mẫu)
-5. [Hướng dẫn Chi tiết Từng Chức năng](#5-hướng-dẫn-chi-tiết-từng-chức-năng)
-6. [Số liệu Hiệu năng & Tối ưu hóa](#6-số-liệu-hiệu-năng--tối-ưu-hóa)
+1. [Giới thiệu Dự án](#1-giới-thiệu-dự-án)
+2. [Sơ đồ Kiến trúc Hệ thống](#2-sơ-đồ-kiến-trúc-hệ-thống)
+3. [Các Tính năng Nổi bật](#3-các-tính-năng-nổi-bật)
+4. [Hướng dẫn Cài đặt & Chạy trên Máy khác](#4-hướng-dẫn-cài-đặt--chạy-trên-máy-khác)
+5. [Tài khoản Thử nghiệm Mẫu](#5-tài-khoản-thử-nghiệm-mẫu)
+6. [Số liệu Đo lường Hiệu năng](#6-số-liệu-đo-lường-hiệu-năng)
 7. [Kiểm thử & Đảm bảo Chất lượng Mã nguồn](#7-kiểm-thử--đảm-bảo-chất-lượng-mã-nguồn)
-8. [Cấu trúc Thư mục Dự án](#8-cấu-trúc-thư-mục-dự-án)
+8. [Cấu trúc Thư mục](#8-cấu-trúc-thư-mục)
+9. [Bản quyền & Tác giả](#9-bản-quyền--tác-giả)
 
 ---
 
-## 1. Giới thiệu Tổng quan
+## 1. Giới thiệu Dự án
 
-**OpenResearch Graph v2** là một hệ thống nghiên cứu khoa học end-to-end hoàn chỉnh được thiết kế theo chuẩn Enterprise Modular Monolith. Dự án giải quyết bài toán tiếp cận và phân tích khối lượng lớn tài liệu khoa học cho sinh viên, nhà nghiên cứu và kỹ sư AI/Data Science:
+**OpenResearch Graph v2** được xây dựng nhằm giải quyết bài toán cốt lõi trong nghiên cứu học thuật: **Làm thế nào để tìm kiếm, thấu hiểu, liên kết và tổng hợp tri thức từ hàng ngàn bài báo khoa học một cách nhanh chóng, chính xác và có thể kiểm chứng được nguồn gốc?**
 
-- **Không phải CRUD thông thường**: Tích hợp các thuật toán học máy, xử lý ngôn ngữ tự nhiên (NLP), đồ thị trích dẫn (Graph Theory) và mô hình ngôn ngữ lớn (LLM RAG).
-- **Trích dẫn Grounded 100%**: LLM trả lời dựa trên văn bản thực tế được bóc tách từ PDF, kèm số trang và độ tương đồng, loại bỏ hoàn toàn hiện tượng "ảo giác" (hallucination).
-- **Hiệu năng cao mức mili-giây**: Vector hóa đa luồng SIMD CPU (`torch.inference_mode`), lưu trữ vector 384 chiều trong Neon PostgreSQL pgvector, hệ thống đệm RAM LRU Cache.
+### 💡 Điểm đột phá về Kỹ thuật:
+- **Hybrid Search Đa tầng (pgvector + FTS + Reranker)**: Kết hợp tìm kiếm ngữ nghĩa theo vector (Embedding 384 chiều) với Full-Text Search (BM25/FTS) và mô hình Cross-Encoder để xếp hạng lại (Re-ranking) kết quả phù hợp nhất.
+- **Trích dẫn Grounded 100% (No Hallucination)**: Trợ lý AI phân tích trực tiếp từng chunk nội dung từ file PDF, đính kèm số trang cụ thể và điểm tin cậy, giúp người dùng kiểm chứng ngay lập tức.
+- **Đồ thị Trích dẫn Tương tác (Cytoscape.js + PageRank)**: Trực quan hóa các mối liên kết giữa bài báo gốc, tài liệu tham khảo và các công trình trích dẫn tiếp nối theo thuật toán NetworkX PageRank.
+- **Thư viện & Đề xuất Cá nhân hóa**: Tự động học sở thích nghiên cứu của người dùng qua các thao tác đọc, lưu bài báo để gợi ý các công trình liên quan bằng thuật toán lai (Content-based + Personalized PageRank).
 
 ---
 
-## 2. Kiến trúc Kỹ thuật & Công nghệ
+## 2. Sơ đồ Kiến trúc Hệ thống
 
 ```mermaid
 flowchart TD
-    User([Người dùng / Trình duyệt]) <--> Frontend[Next.js 15 App Router / React 19 / TypeScript]
-    Frontend <--> |REST API / JSON| Backend[FastAPI Backend / Python 3.13]
+    User([Người dùng / Web Browser]) <--> Frontend[Next.js 15 App Router / React 19 / TypeScript]
+    Frontend <--> |REST API / JSON| Backend[FastAPI Modular Monolith / Python 3.13]
     
-    subgraph Core AI & Search Engines
-        Backend <--> |pgvector HNSW / FTS| DB[(Neon Cloud PostgreSQL)]
-        Backend <--> |Sentence-Transformers & CrossEncoder| ML[PyTorch CPU Vectorization]
-        Backend <--> |NetworkX PageRank| GraphEngine[Citation Graph Engine]
-        Backend <--> |Local HTTP / Ollama| LLM[Ollama Local - Qwen3:4B]
+    subgraph Core AI & Data Engines
+        Backend <--> |pgvector HNSW / GIN FTS| DB[(Neon Cloud PostgreSQL)]
+        Backend <--> |sentence-transformers & Cross-Encoder| ML[PyTorch CPU Vectorization Engine]
+        Backend <--> |NetworkX DiGraph & PageRank| GraphEngine[Citation Graph Engine]
+        Backend <--> |Local HTTP / Ollama| LLM[Ollama Local LLM - Qwen3:4B / OpenAI]
     end
     
-    subgraph Background Processing
-        Backend --> |Task Queue| CeleryWorker[Celery Worker / Async Tasks]
-        CeleryWorker --> |PyMuPDF Extraction| Storage[PDF Storage / Uploads]
-        CeleryWorker --> DB
+    subgraph Background Task Processing
+        Backend --> |Celery / Async Task| Worker[Async Processing Worker]
+        Worker --> |PyMuPDF Extraction & Magic Byte Validation| Storage[PDF Storage / Uploads]
+        Worker --> DB
     end
 ```
 
-### Chi tiết Công nghệ Cốt lõi:
-- **Frontend**: Next.js 15 (App Router), React 19, TypeScript, TanStack React Query v5, Cytoscape.js (Interactive Graph), ECharts (Data Visualization), React Markdown.
-- **Backend API**: FastAPI (Asynchronous Python), Pydantic v2, SQLAlchemy 2.0 (Asyncpg connection pooling).
-- **Cơ sở dữ liệu**: Neon PostgreSQL Cloud (Hỗ trợ extension `vector` 384 chiều, `uuid-ossp`, `pg_trgm`).
-- **AI & Embedding Engine**: `sentence-transformers/all-MiniLM-L6-v2` (Vector 384 chiều), Cross-Encoder Reranker (`ms-marco-MiniLM-L-6-v2`), PyTorch SIMD Multi-threading.
-- **LLM Provider**: Ollama cục bộ (`qwen3:4b`), hỗ trợ linh hoạt OpenAI-compatible API hoặc Mock Fallback.
-- **Bảo mật**: Hashing mật khẩu chuẩn Argon2, JWT token ngắn hạn, Refresh Token Rotation gia đình chống tái sử dụng (Reuse Detection).
+---
+
+## 3. Các Tính năng Nổi bật
+
+| Tính năng | Đường dẫn | Mô tả chi tiết |
+|---|---|---|
+| **🔍 Tìm kiếm Đa chiều (Hybrid Search)** | `/search` | Tìm theo từ khóa, ngữ nghĩa, năm xuất bản, tác giả, Open Access. Tự động đồng bộ trạng thái tìm kiếm lên URL (query, filters, page). |
+| **⚖️ Ma trận So sánh Bài báo** | `/search` | Chọn tối đa 4 bài báo để so sánh trực diện về phương pháp, số trích dẫn, quyền truy cập và năm công bố. |
+| **🌐 Đồ thị Trích dẫn Tương tác** | `/graph` | Khám phá mạng lưới bài báo dạng mạng node/edge đồ thị, chuyển đổi linh hoạt các layout (Cose, Circle, Concentric, Breadthfirst). |
+| **💬 Trợ lý Deep PDF RAG Chat** | `/chat` | Tải lên tài liệu PDF khoa học để hỏi đáp chuyên sâu (Tóm tắt, Phương pháp, Kết quả, Hạn chế). Quản lý lịch sử các phiên trò chuyện cũ. |
+| **✨ Gợi ý Bài báo AI** | `/recommendations` | Hệ thống đề xuất đa tín hiệu giải thích lý do vì sao bài báo được gợi ý cho bạn (Explanation Box). |
+| **📚 Thư viện Nghiên cứu Cá nhân** | `/library` | Phân loại bài báo theo Bộ sưu tập (Collections), chỉnh sửa Thẻ tags (`#tag`), ghi chú ý tưởng cá nhân (`notes`) và lọc nhanh. |
+| **📊 Phân tích Xu hướng Học thuật** | `/analytics` | Biểu đồ trực quan hóa số lượng công bố theo năm, xu hướng nghiên cứu và các chủ đề nổi bật. |
+| **✉️ Xác thực Tài khoản Email** | `/verify-email` | Xác minh tài khoản người dùng qua liên kết token bảo mật. |
 
 ---
 
-## 3. Hướng dẫn Cài đặt & Chạy trên Máy khác
+## 4. Hướng dẫn Cài đặt & Chạy trên Máy khác
 
-Dự án hỗ trợ chạy mượt mà trên mọi hệ điều hành (**Windows, macOS, Linux**).
+Hệ thống hoạt động tương thích trên **Windows, macOS, Linux**.
 
-### A. Yêu cầu Hệ thống
-- **Python**: `>= 3.11` (Khuyến nghị 3.12 hoặc 3.13).
-- **Node.js**: `>= 20.x` (Khuyến nghị Node.js 22+ và `npm`).
-- **Ollama** (Tùy chọn để chạy AI Local): Tải tại [ollama.ai](https://ollama.ai) và kéo model `ollama pull qwen3:4b`.
+### A. Yêu cầu Tiên quyết
+- **Python**: Phiên bản `>= 3.11` (Khuyến nghị Python 3.12 hoặc 3.13).
+- **Node.js**: Phiên bản `>= 20.x` (Khuyến nghị Node.js 22 LTS).
+- **Git**.
 
 ---
 
-### B. Các bước Cài đặt Chi tiết
+### B. Các bước Khởi chạy Dự án
 
-#### Bước 1: Clone mã nguồn về máy
+#### Bước 1: Clone kho mã nguồn
 ```bash
 git clone https://github.com/ngtd-2609/OpenResearch-Graph.git
-cd OpenResearch-Graph
+cd OpenResearch-Graph/openresearch-graph-v2
 ```
 
-#### Bước 2: Cấu hình Môi trường ảo Python (Backend)
+#### Bước 2: Khởi động Backend (FastAPI)
+Mở cửa sổ dòng lệnh thứ nhất (Terminal/PowerShell):
 ```powershell
-# Trên Windows PowerShell:
+# Di chuyển vào thư mục backend
+cd backend
+
+# Tạo và kích hoạt môi trường ảo Python
 python -m venv .venv
+# Trên Windows:
 .\.venv\Scripts\Activate.ps1
-pip install -r backend/requirements.txt
-
 # Trên macOS / Linux:
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r backend/requirements.txt
+# source .venv/bin/activate
+
+# Cài đặt thư viện phụ thuộc
+pip install -r requirements.txt
+
+# Khởi chạy server FastAPI
+uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload
 ```
+> Backend API và tài liệu Swagger UI sẽ sẵn sàng tại: **`http://127.0.0.1:8000/docs`**
 
-#### Bước 3: Cấu hình Biến Môi trường Backend
-Tạo tệp `backend/.env` (hoặc sao chép từ `backend/.env.example`):
-```ini
-DATABASE_URL=postgresql+asyncpg://neondb_owner:npg_XbQkE5I3zYyN@ep-orange-moon-a1r7l8w0-pooler.ap-southeast-1.aws.neon.tech/neondb?ssl=require
-APP_ENV=development
-APP_DEBUG=true
-FRONTEND_URL=http://localhost:3000
-JWT_SECRET_KEY=b9161a0d8e8f810168b449b49b642e7bb81005a39cb6ff7bb88a29bfa897db22
-ACCESS_TOKEN_EXPIRE_MINUTES=30
-REFRESH_TOKEN_EXPIRE_DAYS=7
-
-# Cấu hình AI & Embeddings
-EMBEDDING_MODEL_NAME=sentence-transformers/all-MiniLM-L6-v2
-EMBEDDING_DIMENSION=384
-EMBEDDING_DEVICE=cpu
-RERANKER_MODEL_NAME=cross-encoder/ms-marco-MiniLM-L-6-v2
-
-# Cấu hình LLM
-LLM_PROVIDER=ollama
-OLLAMA_BASE_URL=http://localhost:11434
-OLLAMA_MODEL=qwen3:4b
-```
-
-#### Bước 4: Cài đặt Thư viện Giao diện (Frontend)
+#### Bước 3: Khởi động Frontend (Next.js)
+Mở cửa sổ dòng lệnh thứ hai:
 ```bash
+# Di chuyển vào thư mục frontend
 cd frontend
+
+# Cài đặt dependencies (nếu chạy lần đầu)
 npm install
-cd ..
-```
 
----
-
-### C. Khởi chạy Ứng dụng
-
-Mở **2 cửa sổ Terminal**:
-
-#### Terminal 1 — Khởi động Backend API Server:
-```powershell
-# Windows PowerShell:
-cd backend
-$env:PYTHONPATH=".;.."
-..\.venv\Scripts\uvicorn.exe app.main:app --host 0.0.0.0 --port 8000 --reload
-
-# macOS / Linux:
-cd backend
-export PYTHONPATH=".:.."
-../.venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
-```
-> Backend API và tài liệu Swagger UI sẽ sẵn sàng tại: **http://localhost:8000/docs**
-
-#### Terminal 2 — Khởi động Frontend Web Server:
-```bash
-cd frontend
+# Khởi chạy Next.js development server
 npm run dev
 ```
-> Giao diện Web sẽ sẵn sàng tại: **http://localhost:3000**
+> Truy cập ứng dụng web tại: **`http://localhost:3000`**
 
 ---
 
-## 4. Tài khoản Thử nghiệm Mẫu
+## 5. Tài khoản Thử nghiệm Mẫu
 
-Dữ liệu seed đã được khởi tạo sẵn trong Database:
+Hệ thống đã chuẩn bị sẵn các tài khoản với dữ liệu mẫu trong Cloud Database:
 
-| Tài khoản | Email | Mật khẩu | Vai trò (Role) | Đặc quyền |
-|---|---|---|---|---|
-| **Admin** | `admin@openresearch.dev` | `Admin123!` | `ADMIN` | Quản trị hệ thống, nạp dữ liệu OpenAlex, xem logs |
-| **Student** | `user@openresearch.dev` | `Student123!` | `STUDENT` | Tìm kiếm, Lưu bài, Chat PDF, Nhận đề xuất AI |
-| **Premium** | `premium@openresearch.dev` | `Premium123!` | `PREMIUM` | Tải PDF không giới hạn, xuất báo cáo Dossier |
-
----
-
-## 5. Hướng dẫn Chi tiết Từng Chức năng
-
-### 1. 🔍 Tìm kiếm & So sánh Đối chiếu (Hybrid Search & Comparison Matrix)
-- **Đường dẫn**: `/search`
-- **Cơ chế**: Kết hợp đồng thời Full-Text Search (FTS) và pgvector Cosine Similarity, lọc theo năm xuất bản, bản quyền Open Access và xếp hạng lại bằng Cross-Encoder.
-- **Bảng So sánh (Comparison Matrix)**: Nhấp nút **`+ So sánh`** trên bất kỳ 2-4 bài báo để hiển thị bảng ma trận đối chiếu trực quan về chỉ số trích dẫn, tóm tắt phương pháp và nút đọc PDF gốc.
-
-### 2. 🕸️ Mạng lưới Đồ thị Trích dẫn (Citation Network)
-- **Đường dẫn**: `/graph`
-- **Cơ chế**: Biểu diễn các mối liên kết trích dẫn chéo bằng Cytoscape.js.
-- **Bảng điều khiển đa năng**: Chuyển đổi nhanh 4 bố cục đồ thị (*Lực đẩy COSE, Đồng tâm Concentric, Vòng tròn Circle, Cây phân cấp Hierarchy*), phóng to thu nhỏ và thanh kiểm tra metadata của từng bài báo (Node Inspector).
-
-### 3. 📄 Trợ lý Deep Research PDF RAG & Xuất Báo cáo Dossier
-- **Đường dẫn**: `/chat`
-- **Cơ chế**: Tải file PDF lên, hệ thống tự động bóc tách text bằng PyMuPDF, loại bỏ header/footer lặp, chia chunk và tính vector embedding.
-- **Deep Research Mode**: Trực quan hóa quy trình suy luận 3 bước của Agent.
-- **Interactive Citation Pills**: Huy hiệu trang tương tác `[📄 Trang X]`, nhấp vào để xem trích đoạn gốc và độ tin cậy.
-- **Xuất Báo cáo Markdown**: Tải toàn bộ nghiên cứu tổng hợp về máy tính chỉ với 1 click.
-
-### 4. 🎯 Gợi ý Nghiên cứu Cá nhân hóa (Hybrid Recommender)
-- **Đường dẫn**: `/recommendations`
-- **Cơ chế**: Kết hợp 7 trọng số tín hiệu: *Nội dung vector, Lọc cộng tác (Collaborative filtering), Personalized PageRank trên đồ thị, Độ phổ biến, Tính cập nhật, Open Access và Phản hồi người dùng*.
-- **Phân rã trực quan**: Thể hiện tỷ lệ phần trăm độ phù hợp và thanh phân bổ điểm từng thuật toán.
-
-### 5. 📚 Thư viện & Xuất Trích dẫn Học thuật
-- **Đường dẫn**: `/library` & `/papers/[paperId]`
-- **Cơ chế**: Quản lý các bài báo đã lưu, ghi chú nghiên cứu và công cụ **Academic Citation Generator** xuất định dạng chuẩn **BibTeX, APA, IEEE**.
-
-### 6. 📊 Phân tích Xu hướng (Scholarly Analytics)
-- **Đường dẫn**: `/analytics`
-- **Cơ chế**: Biểu đồ trực quan hóa số lượng công bố theo năm, phân bổ chủ đề và các tác giả/tổ chức có tầm ảnh hưởng lớn nhất.
-
----
-
-## 6. Số liệu Hiệu năng & Tối ưu hóa
-
-Đo lường thời gian xử lý thực tế trên hệ thống:
-
-| Tác vụ (Endpoint) | Trước tối ưu | Sau tối ưu | Mức cải thiện |
+| Loại tài khoản | Email đăng nhập | Mật khẩu mặc định | Quyền hạn |
 |---|---|---|---|
-| **Kiểm tra Rate Limit** | `~2.000 ms` | **`0.076 ms`** | **Nhanh hơn 26.000 lần** |
-| **Xác thực Đăng nhập (Argon2)** | `22.750 ms` | **`55.4 ms`** | **Nhanh hơn 390 lần** |
-| **Tính toán Gợi ý (Recommendations)** | `16.218 ms` | **`215 ms`** | **Nhanh hơn 75 lần** |
-| **Tìm kiếm Bài báo Lặp lại (Cache)** | `~1.500 ms` | **`0.001 ms`** | **Tức thì (RAM Cache)** |
-| **Truy vấn Dữ liệu Người dùng** | `~150 ms` | **`48.7 ms`** | **Nhanh hơn 3 lần** |
+| 👑 **Administrator** | `admin@openresearch.local` | `AdminPass123!` | Toàn quyền quản trị, kiểm tra trạng thái tích hợp hệ thống |
+| 💎 **Premium Researcher** | `premium@openresearch.local` | `PremiumPass123!` | Hạn mức tải tài liệu và tìm kiếm nâng cao không giới hạn |
+| 👤 **Standard User** | `user@openresearch.local` | `UserPass123!` | Người dùng nghiên cứu tiêu chuẩn |
+
+---
+
+## 6. Số liệu Đo lường Hiệu năng
+
+Các tác vụ đã được tối ưu hóa ở mức mili-giây:
+
+| Tác vụ cốt lõi | Thời gian đo lường | Ghi chú kỹ thuật |
+|---|---|---|
+| **Kiểm tra Rate Limit (LRU Cache)** | **`0.076 ms`** | Cache trực tiếp trong RAM, không nghẽn I/O |
+| **Xác thực Mật khẩu (Argon2)** | **`55.4 ms`** | Mã hóa an toàn chuẩn OWASP |
+| **Gợi ý Bài báo Cá nhân hóa (Hybrid Recs)** | **`215 ms`** | Đã pre-compute vector embeddings và lưu trong Neon DB |
+| **Tìm kiếm Kết quả Lặp lại (Query Cache)** | **`0.001 ms`** | Phản hồi tức thì qua bộ nhớ đệm |
+| **Kiểm tra Sẵn sàng Hệ thống (`/ready`)** | **`< 25 ms`** | Healthcheck cơ sở dữ liệu |
 
 ---
 
 ## 7. Kiểm thử & Đảm bảo Chất lượng Mã nguồn
 
-Dự án được bao phủ kiểm thử tự động toàn diện:
+Dự án tuân thủ nghiêm ngặt quy trình kiểm thử tự động:
 
-### Chạy Kiểm thử Backend:
-```powershell
-cd backend
-$env:PYTHONPATH=".;.."
-..\.venv\Scripts\pytest.exe tests --ignore=tests/integration -q
-```
-> Kết quả: **94/94 tests passed** (100%).
-
-### Chạy Kiểm thử & Biên dịch Frontend:
 ```bash
+# 1. Chạy Backend Unit & Service Tests
+cd backend
+pytest tests --ignore=tests/integration -q
+# Kết quả: 94/94 passed (100% Passed)
+
+# 2. Kiểm tra tính toàn vẹn kiểu dữ liệu Frontend
 cd frontend
-npm run typecheck   # Kiểm tra 100% kiểu dữ liệu TypeScript (0 errors)
-npm run lint        # Kiểm tra chuẩn ESLint (0 warnings)
-npm run test:run    # Chạy Vitest Unit Tests (8/8 passed)
-npm run build       # Biên dịch production bundle 19 trang (0 errors)
+npm run typecheck
+# Kết quả: 0 Type Errors
+
+# 3. Biên dịch Production Build
+npm run build
+# Kết quả: 20/20 routes biên dịch thành công (0 Errors)
 ```
 
 ---
 
-## 8. Cấu trúc Thư mục Dự án
+## 8. Cấu trúc Thư mục
 
 ```text
 openresearch-graph-v2/
 ├── backend/                  # FastAPI Application Core
+│   ├── alembic/             # Database Migration Versions
 │   ├── app/
-│   │   ├── api/v1/          # REST API Endpoints (Auth, Search, Graph, Chat, Recs, Library)
-│   │   ├── core/            # Config, Security (Argon2, JWT), Dependencies
-│   │   ├── db/              # SQLAlchemy Models & Asyncpg Session Pooling
-│   │   ├── ml/              # PyTorch Relevance Models & Training Pipeline
-│   │   ├── schemas/         # Pydantic Request/Response Schemas
-│   │   ├── services/        # Search, RAG, PDF, Graph, Embeddings, RateLimit
-│   │   └── tasks/           # Async Document & Ingestion Tasks
 │   ├── tests/               # 94 Backend Unit & Service Tests
 │   └── requirements.txt     # Python Dependencies
 │
@@ -263,6 +204,7 @@ openresearch-graph-v2/
 
 ---
 
-## 📄 Bản quyền & Giấy phép
+## 9. Bản quyền & Tác giả
 
-Phát triển bởi đội ngũ OpenResearch Graph. Giấy phép mã nguồn mở **MIT License**.
+Dự án được nghiên cứu, phát triển và tối ưu hóa bởi tác giả **Nguyen Tung Duong**.  
+Mã nguồn được phát hành theo giấy phép **[MIT License](LICENSE)**.

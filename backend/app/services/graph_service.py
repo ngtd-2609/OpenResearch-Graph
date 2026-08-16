@@ -11,7 +11,12 @@ class GraphService:
     async def citation_graph(self, db: AsyncSession, limit: int = 80) -> dict:
         papers = list((await db.scalars(select(Paper).order_by(Paper.cited_by_count.desc()).limit(limit))).all())
         ids = {paper.id for paper in papers}
-        edges = list((await db.execute(select(Citation.citing_paper_id, Citation.cited_paper_id))).all())
+        edges = list((await db.execute(
+            select(Citation.citing_paper_id, Citation.cited_paper_id).where(
+                Citation.citing_paper_id.in_(ids),
+                Citation.cited_paper_id.in_(ids),
+            )
+        )).all())
         graph = nx.DiGraph()
         for paper in papers:
             graph.add_node(str(paper.id))
